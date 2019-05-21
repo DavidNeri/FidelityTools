@@ -82,7 +82,6 @@ Namespace Controllers
                 End If
                 coneccion.Close()
             Catch ex As Exception
-                ex.Message("Error al cargar el producto").ToString()
             End Try
             ViewBag.idCategoria = New SelectList(db.Categorias, "id", "nombre", productos.idCategoria)
             Return RedirectToAction("Index")

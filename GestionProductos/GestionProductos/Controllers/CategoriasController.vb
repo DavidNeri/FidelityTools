@@ -69,7 +69,7 @@ Namespace Controllers
                 End If
                 coneccion.Close()
             Catch ex As Exception
-                ex.Message("Error al cargar la categoria").ToString()
+
 
             End Try
             Return RedirectToAction("Index")

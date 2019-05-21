@@ -18,12 +18,25 @@ End Code
         </div>
         <div class="form-group">
             <div class="col-md-offset-2 col-md-10">
-                <input type="submit" value="Guardar" class="btn btn-default" OnClick="ValidarCategoria();" />
+                <input type="submit" value="Guardar" class="btn btn-default" onchange="ValidarCategoria();" />
             </div>
         </div>
     </div>
 End Using
 @Section Scripts
     @Scripts.Render("~/bundles/jqueryval")
+<script>
+    var Categoria = document.getElementById("TxtCat").innerText;
+var Label = document.getElementById("LblCat").innerText
+
+function ValidarCategoria(Categoria){
+
+    alert(Categoria);
+    alert(Label);
+
+
+}
+    </script>
+
 End Section
 
