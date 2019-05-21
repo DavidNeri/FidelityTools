@@ -49,31 +49,43 @@ Namespace Controllers
         <ValidateAntiForgeryToken()>
         Function Create(<Bind(Include:="id,nombre,stock,precio,idCategoria")> ByVal productos As Productos) As ActionResult
             Dim Sentencia As String = "Insert into Productos values (@NomProducto, @Stock, @Precio, @IdCat)"
-            Dim comando As New SqlCommand(Sentencia, coneccion)
+            Dim buscar As String = "Select * from Productos where nombre=@NomProducto"
+            Dim comando As New SqlCommand
             Dim nomProducto As String = productos.nombre
             Dim Stock As String = productos.stock
             Dim Precio As Decimal = productos.precio
             Dim idCat As Integer = productos.idCategoria
+
+
             Try
                 coneccion.Open()
                 comando.Connection = coneccion
                 comando.CommandType = CommandType.Text
-                comando.CommandText = Sentencia
+                comando.CommandText = buscar
                 comando.Parameters.AddWithValue("@NomProducto", nomProducto)
-                comando.Parameters.AddWithValue("@stock", Stock)
-                comando.Parameters.AddWithValue("@Precio", Precio)
-                comando.Parameters.AddWithValue("@IdCat", idCat)
-                comando.ExecuteNonQuery()
-                comando.Parameters.Clear()
+                Dim Resultado As String = comando.ExecuteScalar()
 
+                If Not IsNothing(Resultado) Then
+                    Return Content("<script language='javascript' type='text/javascript'>
+                                    alert('No se puede agregar: El producto ya existe en la base de datos!');
+                                   </script>")
+                Else
+                    comando.Parameters.Clear()
+                    comando.Connection = coneccion
+                    comando.CommandType = CommandType.Text
+                    comando.CommandText = Sentencia
+                    comando.Parameters.AddWithValue("@NomProducto", nomProducto)
+                    comando.Parameters.AddWithValue("@stock", Stock)
+                    comando.Parameters.AddWithValue("@Precio", Precio)
+                    comando.Parameters.AddWithValue("@IdCat", idCat)
+                    comando.ExecuteNonQuery()
+                End If
+                coneccion.Close()
             Catch ex As Exception
-
+                ex.Message("Error al cargar el producto").ToString()
             End Try
-
-
-
             ViewBag.idCategoria = New SelectList(db.Categorias, "id", "nombre", productos.idCategoria)
-            Return View(productos)
+            Return RedirectToAction("Index")
         End Function
 
         ' GET: Productos/Edit/5

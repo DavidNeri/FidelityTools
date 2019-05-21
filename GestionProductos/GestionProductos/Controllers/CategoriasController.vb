@@ -3,7 +3,6 @@ Imports System.Collections.Generic
 Imports System.Data
 Imports System.Data.Sql
 Imports System.Data.SqlClient
-
 Imports System.Data.Entity
 Imports System.Linq
 Imports System.Net
@@ -12,16 +11,10 @@ Imports System.Web.Mvc
 Imports GestionProductos
 
 Namespace Controllers
-
-
     Public Class CategoriasController
         Inherits System.Web.Mvc.Controller
-
         ReadOnly coneccion As New SqlConnection(ConfigurationManager.ConnectionStrings("FidelityTools").ConnectionString)
-
-
         Private db As New FidelityToolsEntities
-
         ' GET: Categorias
         Function Index() As ActionResult
             Return View(db.Categorias.ToList())
@@ -51,23 +44,37 @@ Namespace Controllers
         <ValidateAntiForgeryToken()>
         Function Create(<Bind(Include:="id, nombre")> ByVal categorias As Categorias) As ActionResult
             Dim Sentencia As String = "Insert into Categorias values (@Categoria)"
+            Dim Buscar As String = "Select * from categorias where nombre=@Nombre"
             Dim NomCat As String = categorias.nombre
-            Dim comando As New SqlCommand(Sentencia, coneccion)
+            Dim comando As New SqlCommand
             Try
                 coneccion.Open()
+                comando.Parameters.Clear()
                 comando.Connection = coneccion
                 comando.CommandType = CommandType.Text
-                comando.CommandText = Sentencia
-                comando.Parameters.AddWithValue("@Categoria", NomCat)
-                comando.ExecuteNonQuery()
-                comando.Parameters.Clear()
+                comando.CommandText = Buscar
+                comando.Parameters.AddWithValue("@nombre", NomCat)
+                Dim resultado As String = comando.ExecuteScalar()
+                If Not IsNothing(resultado) Then
+                    Return Content("<script language='javascript' type='text/javascript'>
+                                    alert('No se puede agregar: La categoria ya existe en la base de datos!');
+                                   </script>")
+                Else
+                    comando.Parameters.Clear()
+                    comando.Connection = coneccion
+                    comando.CommandType = CommandType.Text
+                    comando.CommandText = Sentencia
+                    comando.Parameters.AddWithValue("@Categoria", NomCat)
+                    comando.ExecuteNonQuery()
+                End If
+                coneccion.Close()
             Catch ex As Exception
+                ex.Message("Error al cargar la categoria").ToString()
 
             End Try
-
             Return RedirectToAction("Index")
-            Return View(categorias)
         End Function
+
 
         ' GET: Categorias/Edit/5
         Function Edit(ByVal id As Integer?) As ActionResult
@@ -113,8 +120,30 @@ Namespace Controllers
         <ValidateAntiForgeryToken()>
         Function DeleteConfirmed(ByVal id As Integer) As ActionResult
             Dim categorias As Categorias = db.Categorias.Find(id)
-            db.Categorias.Remove(categorias)
-            db.SaveChanges()
+            Dim Id_Cat As Integer = id
+            Dim buscar As String = "Select * from Productos where idCategoria=@Id_Cat"
+            Dim comando As New SqlCommand
+
+            Try
+                coneccion.Open()
+                comando.Connection = coneccion
+                comando.CommandType = CommandType.Text
+                comando.CommandText = buscar
+                comando.Parameters.AddWithValue("@Id_Cat", Id_Cat)
+                Dim Resultado As String = comando.ExecuteScalar()
+                coneccion.Close()
+
+                If IsNothing(Resultado) Then
+                    db.Categorias.Remove(categorias)
+                    db.SaveChanges()
+                Else
+                    Return Content("<script language='javascript' type='text/javascript'>
+                                    alert('No se puede agregar: La categoria Tiene productos asociados');
+                                   </script>")
+                End If
+            Catch ex As Exception
+                ex.Message("Error en la conexion, no se pudo eliminar la categoria").ToString()
+            End Try
             Return RedirectToAction("Index")
         End Function
 
@@ -125,4 +154,6 @@ Namespace Controllers
             MyBase.Dispose(disposing)
         End Sub
     End Class
+
+
 End Namespace
