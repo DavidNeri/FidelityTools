@@ -1,10 +1,7 @@
-﻿var Categoria = document.getElementById("TxtCat").innerText;
-var Label = document.getElementById("LblCat").innerText
+﻿var Categoria = document.getElementById("TxtCat").value;
+var Label = document.getElementById("LblCat").value
 
-function ValidarCategoria(Categoria){
-
-    alert(Categoria);
-    alert(Label);
-
+function ValidarCategoria() {
+    alert('Mensje' );
 
 }
