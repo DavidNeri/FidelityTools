@@ -65,9 +65,17 @@ Namespace Controllers
                 comando.Parameters.AddWithValue("@NomProducto", nomProducto)
                 Dim Resultado As String = comando.ExecuteScalar()
 
+                If IsNumeric(nomProducto) Or Not IsNumeric(Precio) Or Not IsNumeric(Stock) Then
+                    Return Content("<script language='javascript' type='text/javascript'>
+                                    alert('Tipo de datos no valido'); window.location='/productos/create';
+                                   </script>")
+
+                End If
+
                 If Not IsNothing(Resultado) Then
                     Return Content("<script language='javascript' type='text/javascript'>
                                     alert('No se puede agregar: El producto ya existe en la base de datos!');
+                                     window.location='/productos/create';
                                    </script>")
                 Else
                     comando.Parameters.Clear()

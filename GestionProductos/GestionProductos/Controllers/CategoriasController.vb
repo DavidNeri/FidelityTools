@@ -55,11 +55,20 @@ Namespace Controllers
                 comando.CommandText = Buscar
                 comando.Parameters.AddWithValue("@nombre", NomCat)
                 Dim resultado As String = comando.ExecuteScalar()
+
+                If IsNumeric(NomCat) Then
+                    Return Content("<script language='javascript' type='text/javascript'>
+                                    alert('Tipo de datos no valido');window.location='/Categorias/create';
+                                   </script>")
+                End If
                 If Not IsNothing(resultado) Then
                     Return Content("<script language='javascript' type='text/javascript'>
                                     alert('No se puede agregar: La categoria ya existe en la base de datos!');
+                                    window.location='/Categorias/create';
                                    </script>")
                 Else
+
+
                     comando.Parameters.Clear()
                     comando.Connection = coneccion
                     comando.CommandType = CommandType.Text
@@ -136,13 +145,14 @@ Namespace Controllers
                 If IsNothing(Resultado) Then
                     db.Categorias.Remove(categorias)
                     db.SaveChanges()
+                    Return RedirectToAction("Index")
                 Else
                     Return Content("<script language='javascript' type='text/javascript'>
-                                    alert('No se puede agregar: La categoria Tiene productos asociados');
+                                    alert('La categoria Tiene productos asociados');
+                                    window.location='/categorias/index';
                                    </script>")
                 End If
             Catch ex As Exception
-                ex.Message("Error en la conexion, no se pudo eliminar la categoria").ToString()
             End Try
             Return RedirectToAction("Index")
         End Function
